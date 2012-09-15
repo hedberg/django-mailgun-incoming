@@ -36,21 +36,21 @@ Installation
         "mailgun_incoming",
     ]
 
-- Include urls. 
+- Include urls. ::
     
     url('^email/', include('mailgun_incoming.urls')),
     
-    Point your Mailgun forwarding to the URL used, i.e. /email/incoming/ using the above URL configuration.
+- Point your Mailgun forwarding to the URL used, i.e. /email/incoming/ using the above URL configuration.
 
 - Settings
 
-    MAILGUN_ACCESS_KEY (optional)
-    - This is used to verify the signature in posted data. 
-    
-    MAILGUN_VERIFY_SIGNATURE (optional)
+    ``MAILGUN_ACCESS_KEY`` (optional)
+    - This is used to verify the signature in posted data.
+
+    ``MAILGUN_VERIFY_SIGNATURE`` (optional)
     - This defaults to True if MAILGUN_ACCESS_KEY is specified. Can be set to False for debugging etc.
-    
-    MAILGUN_UPLOAD_TO (optional)
+
+    ``MAILGUN_UPLOAD_TO`` (optional)
     - This can be used to specify where attachments should be saved. This is passed to the file field. Defaults to 'attachments/'
 
 Basic Usage
@@ -67,7 +67,7 @@ Customisation
 
 Customisation can be done by
 
-- adding processing logic triggered by the email_recieved signal
+- adding processing logic triggered by the email_recieved signal (e.g. connecting a user object to the email)
 - extending the email model
 - passing parameters to the Incoming view
 - subclassing the Incoming view
