@@ -56,18 +56,18 @@ Installation
 Basic Usage
 -----------
     
-    Using the default settings incoming emails are stored in the database and triggers the ``mailgun_incoming.signals.email_received`` signal for further processing.
+Using the default settings incoming emails are stored in the database and triggers the ``mailgun_incoming.signals.email_received`` signal for further processing.
 
-    Three models are included in the package. EmailBaseModel - an abstract base model, IncomingEmail - which extends the base model adding a user field and Attachment - a basic model for storing incoming file attachments.
+Three models are included in the package. EmailBaseModel - an abstract base model, IncomingEmail - which extends the base model adding a user field and Attachment - a basic model for storing incoming file attachments.
 
-    Processing of incoming data are done in the Incoming view which is class based.
+Processing of incoming data are done in the view Incoming which is class based.
 
 Customisation
 -------------
 
-    Customisation can be done by
+Customisation can be done by
 
-    - adding processing logic triggered by the email_recieved signal
-    - extending the email model
-    - passing parameters to the Incoming view
-    - subclassing the Incoming view
+- adding processing logic triggered by the email_recieved signal
+- extending the email model
+- passing parameters to the Incoming view
+- subclassing the Incoming view
