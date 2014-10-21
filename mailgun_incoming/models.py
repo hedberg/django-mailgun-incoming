@@ -3,7 +3,7 @@ import logging
 from email.Utils import parseaddr
 from django.db import models
 from django.utils.translation import ugettext as _
-from django.utils import simplejson
+import json
 from django.utils.datastructures import MultiValueDict
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -22,43 +22,43 @@ class EmailBaseModel(models.Model):
     stripped_text = models.TextField(_("stripped text"), blank=True)
     stripped_html = models.TextField(_("stripped html"), blank=True)
     stripped_signature = models.TextField(_("stripped signature"), blank=True)
-    message_headers = models.TextField(_("message headers"), blank=True, 
+    message_headers = models.TextField(_("message headers"), blank=True,
         help_text=_("Stored in JSON."))
-    content_id_map = models.TextField(_("Content-ID map"), blank=True, 
+    content_id_map = models.TextField(_("Content-ID map"), blank=True,
         help_text=_("Dictionary mapping Content-ID (CID) values to corresponding attachments. Stored in JSON."))
     received = models.DateTimeField(_("received"), auto_now_add=True)
-    
+
     class Meta:
         abstract = True
         verbose_name = _("incoming email")
         verbose_name_plural = _("incoming emails")
-    
+
     def __init__(self, *args, **kwargs):
         super(EmailBaseModel, self).__init__(*args,**kwargs)
         self._headers = None
         self._cids = None
-    
+
     def _load_headers(self):
         self._headers = MultiValueDict()
         try:
-            header_list = simplejson.loads(self.message_headers)
+            header_list = json.loads(self.message_headers)
             for key,val in header_list:
-                self._headers.appendlist(key,val) 
+                self._headers.appendlist(key,val)
         except:
             logger.exception("Error parsing JSON data containing message headers")
-    
+
     @property
     def headers(self):
         """Access message_headers parsed into MultiValueDict"""
         if self._headers is None:
             self._load_headers()
         return self._headers
-    
+
     def _load_cids(self):
         if self.content_id_map:
             self._cids = {}
         try:
-            self._cids = simplejson.loads(self.content_id_map)
+            self._cids = json.loads(self.content_id_map)
         except:
             logger.exception("Error parsing JSON data containing Content-IDs")
 
@@ -73,18 +73,18 @@ class EmailBaseModel(models.Model):
 
     def __unicode__(self):
         return _("Message from {from_str}: {subject_trunc}").format(
-            from_str=self.from_str, 
+            from_str=self.from_str,
             subject_trunc=self.subject[:20])
-    
+
 class IncomingEmail(EmailBaseModel):
     user = models.ForeignKey(User, blank=True, null=True, verbose_name=_("user"))
 
 class Attachment(models.Model):
     email = models.ForeignKey(IncomingEmail, verbose_name=_("email"))
     file = models.FileField(_("file"), upload_to=UPLOAD_TO)
-    content_id = models.CharField(_("Content-ID"), max_length=255, blank=True, 
+    content_id = models.CharField(_("Content-ID"), max_length=255, blank=True,
         help_text=_("Content-ID (CID) referencing this attachment."))
-    
+
     class Meta:
         verbose_name  = _("attachment")
         verbose_name_plural  = _("attachments")
