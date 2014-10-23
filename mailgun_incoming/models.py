@@ -5,7 +5,6 @@ from django.db import models
 from django.utils.translation import ugettext as _
 import json
 from django.utils.datastructures import MultiValueDict
-from django.contrib.auth.models import User
 from django.conf import settings
 
 UPLOAD_TO = getattr(settings, "MAILGUN_UPLOAD_TO", "attachments/")
@@ -77,7 +76,7 @@ class EmailBaseModel(models.Model):
             subject_trunc=self.subject[:20])
 
 class IncomingEmail(EmailBaseModel):
-    user = models.ForeignKey(User, blank=True, null=True, verbose_name=_("user"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, verbose_name=_("user"))
 
 class Attachment(models.Model):
     email = models.ForeignKey(IncomingEmail, verbose_name=_("email"))
