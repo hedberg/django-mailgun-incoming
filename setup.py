@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='django-mailgun-incoming',
-    version='0.1dev',
+    version='0.1.1',
     author='Simon Hedberg',
     author_email='simon@in-formation.se',
     packages=['mailgun_incoming'],
