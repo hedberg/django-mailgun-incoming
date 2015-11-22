@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from mailgun_incoming.models import Attachment, IncomingEmail
 from mailgun_incoming.signals import email_received
 from mailgun_incoming.forms import EmailForm
+from forms import field_map
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class Incoming(View):
     verify = VERIFY_SIGNATURE
     
     def get_form(self):
-        return modelform_factory(self.email_model, form=self.form)
+        return modelform_factory(self.email_model, form=self.form, exclude=None)
     
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
@@ -43,23 +44,24 @@ class Incoming(View):
                 
         form = self.get_form()(request.POST)
         
-        if form.is_valid():
-            #save email
-            email = form.save()
-            #save attachments
+        email = form.save(commit=False)
+        # remap all the form fields to match the model fields, then save
+        for (field_name, form_key) in field_map.items():
+            if form.cleaned_data.get(form_key,None):
+                setattr(email,field_name,form.cleaned_data.get(form_key))
+        email.save()
+
+        attachments = []
+        if form.cleaned_data.get('attachment-count',0):
             attachments = []
-            if form.cleaned_data.get('attachment-count',0):
-                attachments = []
-                #reverse mapping in content_ids dict
-                content_ids = dict((attnr,cid) for cid,attnr in (email.content_ids or {}).iteritems())
-                i = 1
-                for file in request.FILES.values():
-                    attachment = self.attachment_model(email=email, file=file, content_id=content_ids.get('attachment-{0!s}'.format(i),'')).save()
-                    attachments.append(attachment)
-                    i += 1
-            self.handle_email(email, attachments=attachments)
-        else:
-            logger.debug("Received email message contained errors. %s" % form.errors)
+            #reverse mapping in content_ids dict
+            content_ids = dict((attnr,cid) for cid,attnr in (email.content_ids or {}).iteritems())
+            i = 1
+            for file in request.FILES.values():
+                attachment = self.attachment_model(email=email, file=file, content_id=content_ids.get('attachment-{0!s}'.format(i),'')).save()
+                attachments.append(attachment)
+                i += 1
+        self.handle_email(email, attachments=attachments)
         
         return HttpResponse("OK")
     
