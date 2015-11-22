@@ -15,7 +15,7 @@ class EmailForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(EmailForm, self).__init__(*args, **kwargs)
-        for (field_name, form_key) in self.field_map.items():
+        for (field_name, form_key) in field_map.items():
             self.fields[form_key] = self.fields[field_name]
             del self.fields[field_name]
         self.fields['attachment-count'] = forms.IntegerField(required=False)

@@ -9,8 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from mailgun_incoming.models import Attachment, IncomingEmail
 from mailgun_incoming.signals import email_received
-from mailgun_incoming.forms import EmailForm
-from forms import field_map
+from mailgun_incoming.forms import EmailForm, field_map
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class Incoming(View):
     verify = VERIFY_SIGNATURE
     
     def get_form(self):
-        return modelform_factory(self.email_model, form=self.form, exclude=None)
+        return modelform_factory(self.email_model, form=self.form, exclude=[])
     
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
