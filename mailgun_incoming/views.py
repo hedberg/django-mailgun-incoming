@@ -12,6 +12,7 @@ from django.views.generic.base import View
 from mailgun_incoming.forms import EmailForm
 from mailgun_incoming.models import Attachment, IncomingEmail
 from mailgun_incoming.signals import email_received
+from mailgun_incoming.exceptions import RejectedMailException
 
 logger = logging.getLogger(__name__)
 
@@ -50,18 +51,18 @@ class Incoming(View):
 
         attachments = []
         if form.cleaned_data.get('attachment-count', False):
-            
+
             # reverse mapping in content_ids dict
             content_ids = dict(
                 (attnr, cid) for cid, attnr in
                 (email.content_ids or {}).iteritems())
-            
+
             for file in request.FILES.values():
-                attachment = self.attachment_model(email=email, 
-                    file=file,  
+                attachment = self.attachment_model(email=email,
+                    file=file,
                     content_id=content_ids.get('attachment-{0!s}'.format(i), ''))
                 attachments.save()
-                
+
                 attachments.append(attachment)
 
         # See if any attached signal handlers throw an error
