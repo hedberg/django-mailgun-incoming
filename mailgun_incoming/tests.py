@@ -1,23 +1,42 @@
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
-
-Replace these with more appropriate tests for your application.
-"""
-
+from mailgun_incoming.forms import *
+from mailgun_incoming.models import *
+from django.forms.models import modelform_factory
+from django.test import RequestFactory
 from django.test import TestCase
 
+request_factory = RequestFactory()
+
+
+testpostdata = {
+    'sender': "joeblogs@gmail.com",
+    'from': "joeblogs@gmail.com",
+    'message-headers': "fooobar",
+    'stripped-html': "fooobar",
+    'stripped-signature': "fooobar",
+    'content-id-map': "fooobar",
+    'body-plain': "fooobar",
+    'stripped-text': "fooobar",
+    'body-html': "fooobar",
+    'recipient': "sall@example.com",
+    'subject': "Spam",
+}
+
 class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
+    def test_saving_inbound_email(self):
+        """
+        
+        """
+        request = request_factory.post('/', data=testpostdata)
+        formk = modelform_factory(IncomingEmail, form=EmailForm, exclude=[])
+        form = formk(request.POST)
+        email = form.save()
 
->>> 1 + 1 == 2
-True
-"""}
+        for k, v in form.field_map.items():
+            assert getattr(email, v) == testpostdata[k]
+
+
+
+
+
 

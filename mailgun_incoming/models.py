@@ -1,30 +1,34 @@
 # -*- coding: utf-8 -*-
-import logging
-from email.Utils import parseaddr
-from django.db import models
-from django.utils.translation import ugettext as _
 import json
-from django.utils.datastructures import MultiValueDict
+import logging
+
 from django.conf import settings
+from django.db import models
+from django.utils.datastructures import MultiValueDict
+from django.utils.translation import ugettext as _
+from email.Utils import parseaddr
 
 UPLOAD_TO = getattr(settings, "MAILGUN_UPLOAD_TO", "attachments/")
 
 logger = logging.getLogger(__name__)
 
+
 class EmailBaseModel(models.Model):
     sender = models.EmailField(_("sender"), max_length=255)
-    recipient =	models.CharField(_("recipient"), max_length=255)
-    subject	= models.CharField(_("subject"), max_length=255, blank=True)
     from_str = models.CharField(_("from"), max_length=255)
+
+    recipient = models.CharField(_("recipient"), max_length=255)
+
+    subject = models.CharField(_("subject"), max_length=255, blank=True)
     body_plain = models.TextField(_("body plain"), blank=True)
     body_html = models.TextField(_("body html"), blank=True)
     stripped_text = models.TextField(_("stripped text"), blank=True)
     stripped_html = models.TextField(_("stripped html"), blank=True)
     stripped_signature = models.TextField(_("stripped signature"), blank=True)
     message_headers = models.TextField(_("message headers"), blank=True,
-        help_text=_("Stored in JSON."))
+                                       help_text=_("Stored in JSON."))
     content_id_map = models.TextField(_("Content-ID map"), blank=True,
-        help_text=_("Dictionary mapping Content-ID (CID) values to corresponding attachments. Stored in JSON."))
+                                      help_text=_("Dictionary mapping Content-ID (CID) values to corresponding attachments. Stored in JSON."))
     received = models.DateTimeField(_("received"), auto_now_add=True)
 
     class Meta:
@@ -33,7 +37,7 @@ class EmailBaseModel(models.Model):
         verbose_name_plural = _("incoming emails")
 
     def __init__(self, *args, **kwargs):
-        super(EmailBaseModel, self).__init__(*args,**kwargs)
+        super(EmailBaseModel, self).__init__(*args, **kwargs)
         self._headers = None
         self._cids = None
 
@@ -41,10 +45,11 @@ class EmailBaseModel(models.Model):
         self._headers = MultiValueDict()
         try:
             header_list = json.loads(self.message_headers)
-            for key,val in header_list:
-                self._headers.appendlist(key,val)
+            for key, val in header_list:
+                self._headers.appendlist(key, val)
         except:
-            logger.exception("Error parsing JSON data containing message headers")
+            logger.exception(
+                "Error parsing JSON data containing message headers")
 
     @property
     def headers(self):
@@ -75,18 +80,21 @@ class EmailBaseModel(models.Model):
             from_str=self.from_str,
             subject_trunc=self.subject[:20])
 
+
 class IncomingEmail(EmailBaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, verbose_name=_("user"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, blank=True, null=True, verbose_name=_("user"))
+
 
 class Attachment(models.Model):
     email = models.ForeignKey(IncomingEmail, verbose_name=_("email"))
     file = models.FileField(_("file"), upload_to=UPLOAD_TO)
     content_id = models.CharField(_("Content-ID"), max_length=255, blank=True,
-        help_text=_("Content-ID (CID) referencing this attachment."))
+                                  help_text=_("Content-ID (CID) referencing this attachment."))
 
     class Meta:
-        verbose_name  = _("attachment")
-        verbose_name_plural  = _("attachments")
+        verbose_name = _("attachment")
+        verbose_name_plural = _("attachments")
 
     def __unicode__(self):
         if self.file:
