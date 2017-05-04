@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db import models
 from django.utils.datastructures import MultiValueDict
 from django.utils.translation import ugettext as _
-from email.Utils import parseaddr
 
 UPLOAD_TO = getattr(settings, "MAILGUN_UPLOAD_TO", "attachments/")
 
